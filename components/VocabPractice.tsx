@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { VocabItem } from '../types';
 import { Button } from './Button';
-import { ArrowRight, RefreshCw, ArrowLeft, Languages } from 'lucide-react';
+import { ArrowRight, RefreshCw, ArrowLeft, Type } from 'lucide-react';
 
 interface VocabPracticeProps {
   vocabQueue: VocabItem[];
@@ -10,10 +10,10 @@ interface VocabPracticeProps {
 }
 
 export const VocabPractice: React.FC<VocabPracticeProps> = ({ vocabQueue, onNext, onExit }) => {
-  const [showMeaning, setShowMeaning] = useState(false);
+  const [showEnglish, setShowEnglish] = useState(false);
 
   const handleNext = () => {
-    setShowMeaning(false);
+    setShowEnglish(false);
     onNext();
   };
 
@@ -34,28 +34,30 @@ export const VocabPractice: React.FC<VocabPracticeProps> = ({ vocabQueue, onNext
           <ArrowLeft className="w-4 h-4 mr-2" /> Finish Practice
         </Button>
         <div className="px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-[10px] font-black uppercase tracking-widest">
-           {vocabQueue.length > 1 ? `${vocabQueue.length} words left` : 'Refilling...'}
+           {vocabQueue.length > 1 ? `${vocabQueue.length} words left` : 'Last one!'}
         </div>
       </div>
       
       <div className="bg-white rounded-[2.5rem] shadow-2xl border-4 border-slate-50 p-12 text-center min-h-[400px] flex flex-col justify-center items-center relative overflow-hidden">
-        <label className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-8 block">Target Vocabulary</label>
+        <label className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-8 block">How do you say this in OPIc?</label>
         
-        <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-8 leading-tight tracking-tighter">{current.word}</h2>
+        <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-8 leading-tight tracking-tight">
+          "{current.meaning}"
+        </h2>
         
-        <div className="w-full min-h-[120px] bg-slate-50 rounded-3xl p-6 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 hover:border-rose-200 transition-colors">
-          {showMeaning ? (
+        <div className="w-full min-h-[140px] bg-slate-50 rounded-3xl p-6 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 hover:border-rose-200 transition-colors">
+          {showEnglish ? (
             <div className="animate-in fade-in zoom-in duration-300 text-center">
-                <label className="text-[9px] font-bold text-rose-400 uppercase mb-2 block tracking-wider">Meaning (KR)</label>
-                <p className="text-2xl md:text-3xl font-black text-rose-600 leading-tight">{current.meaning}</p>
+                <label className="text-[9px] font-bold text-rose-400 uppercase mb-2 block tracking-wider">English Expression</label>
+                <p className="text-3xl md:text-4xl font-black text-rose-600 leading-tight tracking-tighter">{current.word}</p>
             </div>
           ) : (
             <button 
-              onClick={() => setShowMeaning(true)} 
+              onClick={() => setShowEnglish(true)} 
               className="flex flex-col items-center gap-2 text-slate-400 font-bold hover:text-rose-500 transition-colors group"
             >
-              <Languages className="w-6 h-6 group-hover:scale-110 transition-transform" />
-              <span className="text-[10px] uppercase tracking-widest">TAP TO REVEAL MEANING</span>
+              <Type className="w-6 h-6 group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] uppercase tracking-widest">TAP TO REVEAL ENGLISH</span>
             </button>
           )}
         </div>
@@ -63,7 +65,7 @@ export const VocabPractice: React.FC<VocabPracticeProps> = ({ vocabQueue, onNext
 
       <div className="mt-8">
         <Button onClick={handleNext} className="w-full py-4 text-lg font-black bg-slate-900 hover:bg-rose-600 transition-all rounded-2xl shadow-xl shadow-slate-200 hover:shadow-rose-200">
-          Next Word <ArrowRight className="w-5 h-5 ml-2" />
+          Next Expression <ArrowRight className="w-5 h-5 ml-2" />
         </Button>
       </div>
     </div>
