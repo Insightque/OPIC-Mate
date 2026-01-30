@@ -1,0 +1,7 @@
+{
+  "name": "OPIc Mate",
+  "description": "A structural practice assistant for OPIc preparation using Gemini to generate scripts and manage spaced repetition.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
