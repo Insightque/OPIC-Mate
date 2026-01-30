@@ -4,56 +4,62 @@ import { ScriptGenerator } from './components/ScriptGenerator';
 import { PracticeMode } from './components/PracticeMode';
 import { VocabPractice } from './components/VocabPractice';
 import { PatternPractice } from './components/PatternPractice';
-import { ScriptItem, ViewState, VocabLibraryItem } from './types';
+import { ScriptItem, ViewState, VocabLibraryItem, StructureItem } from './types';
 import { MessageSquare } from 'lucide-react';
-import { generateVocabList } from './services/geminiService';
+import { generateVocabList, generateStructureList } from './services/geminiService';
 
 export default function App() {
   const [view, setView] = useState<ViewState>(ViewState.DASHBOARD);
-  const [scripts, setScripts] = useState<ScriptItem[]>([]);
-  const [vocabLibrary, setVocabLibrary] = useState<VocabLibraryItem[]>([]);
+  
+  // State with lazy initialization to ensure consistency with localStorage
+  const [scripts, setScripts] = useState<ScriptItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('opic_scripts_v4');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+
+  const [vocabLibrary, setVocabLibrary] = useState<VocabLibraryItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('opic_vocab_v4');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+
+  const [patterns, setPatterns] = useState<StructureItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('opic_patterns_v4');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+
   const [isRefillingVocab, setIsRefillingVocab] = useState(false);
+  const [isRefillingPatterns, setIsRefillingPatterns] = useState(false);
+
+  // Persistence Effects
+  useEffect(() => {
+    localStorage.setItem('opic_scripts_v4', JSON.stringify(scripts));
+  }, [scripts]);
 
   useEffect(() => {
-    const savedScripts = localStorage.getItem('opic_scripts_v4');
-    if (savedScripts) {
-      try {
-        setScripts(JSON.parse(savedScripts));
-      } catch (e) { console.error("Failed to parse scripts", e); }
-    }
-    const savedVocab = localStorage.getItem('opic_vocab_v4');
-    if (savedVocab) {
-      try {
-        setVocabLibrary(JSON.parse(savedVocab));
-      } catch (e) { console.error("Failed to parse vocab", e); }
-    }
-  }, []);
+    localStorage.setItem('opic_vocab_v4', JSON.stringify(vocabLibrary));
+  }, [vocabLibrary]);
 
-  const saveScripts = (newScripts: ScriptItem[]) => {
-    setScripts(newScripts);
-    localStorage.setItem('opic_scripts_v4', JSON.stringify(newScripts));
-  };
+  useEffect(() => {
+    localStorage.setItem('opic_patterns_v4', JSON.stringify(patterns));
+  }, [patterns]);
 
-  const handleUpdateVocab = (updatedItems: VocabLibraryItem[]) => {
-    setVocabLibrary(prevLibrary => {
-      const libraryMap = new Map(prevLibrary.map(item => [item.word, item]));
-      updatedItems.forEach(item => libraryMap.set(item.word, item));
-      const newLibrary = Array.from(libraryMap.values());
-      localStorage.setItem('opic_vocab_v4', JSON.stringify(newLibrary));
-      return newLibrary;
-    });
-  };
 
   // Background Vocabulary Pre-fetching
   useEffect(() => {
     const refillVocabLibrary = async () => {
       if (isRefillingVocab) return;
       const unusedCount = vocabLibrary.filter(v => v.lastTestedAt === null).length;
+      // Keep trying to fill buffer to ~30, but don't block UI based on this
       const REFILL_THRESHOLD = 27;
 
       if (unusedCount < REFILL_THRESHOLD) {
         setIsRefillingVocab(true);
-        console.log(`Unused vocab count (${unusedCount}) is below threshold. Pre-fetching...`);
         try {
           const newItems = await generateVocabList();
           const libraryWords = new Set(vocabLibrary.map(v => v.word));
@@ -63,7 +69,12 @@ export default function App() {
             const newLibraryItems: VocabLibraryItem[] = uniqueNewItems.map(item => ({
               ...item, isKnown: false, failCount: 0, lastTestedAt: null,
             }));
-            handleUpdateVocab(newLibraryItems);
+            // Update using functional state to avoid closure staleness
+            setVocabLibrary(prev => {
+                const libraryMap = new Map(prev.map(item => [item.word, item]));
+                newLibraryItems.forEach(item => libraryMap.set(item.word, item));
+                return Array.from(libraryMap.values());
+            });
           }
         } catch (error) {
           console.error("Failed to pre-fetch vocabulary:", error);
@@ -72,26 +83,64 @@ export default function App() {
         }
       }
     };
-
-    // Run check only after initial load from localStorage is likely complete
-    if (localStorage.getItem('opic_vocab_v4') !== null) {
-      refillVocabLibrary();
-    }
+    refillVocabLibrary();
   }, [vocabLibrary, isRefillingVocab]);
 
+  // Background Pattern Pre-fetching
+  useEffect(() => {
+    const refillPatterns = async () => {
+      if (isRefillingPatterns) return;
+      // If we have fewer than 5 patterns, fetch more (queue system)
+      if (patterns.length < 5) {
+        setIsRefillingPatterns(true);
+        console.log(`Pattern queue low (${patterns.length}). Pre-fetching structures...`);
+        try {
+          const newItems = await generateStructureList();
+          // Avoid duplicates based on English sentence
+          const currentSet = new Set(patterns.map(p => p.english));
+          const uniqueNew = newItems.filter(p => !currentSet.has(p.english));
+          
+          if (uniqueNew.length > 0) {
+            setPatterns(prev => [...prev, ...uniqueNew]);
+          }
+        } catch (error) {
+          console.error("Failed to pre-fetch patterns:", error);
+        } finally {
+          setIsRefillingPatterns(false);
+        }
+      }
+    };
+    refillPatterns();
+  }, [patterns, isRefillingPatterns]);
+
+
+  // Update Handlers
+  const handleUpdateVocab = (updatedItems: VocabLibraryItem[]) => {
+    setVocabLibrary(prevLibrary => {
+      const libraryMap = new Map(prevLibrary.map(item => [item.word, item]));
+      updatedItems.forEach(item => libraryMap.set(item.word, item));
+      return Array.from(libraryMap.values());
+    });
+  };
+
+  const handleNextPattern = () => {
+    // Remove the first pattern from the queue
+    setPatterns(prev => prev.slice(1));
+  };
+
   const handleAddScript = (script: ScriptItem) => {
-    saveScripts([...scripts, script]);
+    setScripts(prev => [...prev, script]);
     setView(ViewState.DASHBOARD);
   };
 
   const handleDeleteScript = (id: string) => {
     if (confirm("Permanently remove this script from library?")) {
-        saveScripts(scripts.filter(s => s.id !== id));
+        setScripts(prev => prev.filter(s => s.id !== id));
     }
   };
 
   const handlePracticeComplete = (results: { scriptId: string, success: boolean }[]) => {
-    const updatedScripts = scripts.map(script => {
+    setScripts(prev => prev.map(script => {
         const result = results.find(r => r.scriptId === script.id);
         if (result) {
             return {
@@ -104,11 +153,12 @@ export default function App() {
             };
         }
         return script;
-    });
-    saveScripts(updatedScripts);
+    }));
   };
 
-  const isVocabReady = vocabLibrary.filter(v => v.lastTestedAt === null).length >= 27;
+  // Critical Change: Considered ready if there is ANY data. 
+  // The threshold logic is now only used for background fetching, not for UI blocking.
+  const isVocabReady = vocabLibrary.length > 0;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-12 font-['Inter']">
@@ -167,6 +217,8 @@ export default function App() {
 
         {view === ViewState.PATTERNS && (
           <PatternPractice 
+            patterns={patterns}
+            onNext={handleNextPattern}
             onExit={() => setView(ViewState.DASHBOARD)} 
           />
         )}

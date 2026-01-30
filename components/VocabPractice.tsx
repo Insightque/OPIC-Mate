@@ -18,14 +18,22 @@ export const VocabPractice: React.FC<VocabPracticeProps> = ({ vocabLibrary, onUp
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (isVocabReady && vocabLibrary.length > 0) {
+    // START SESSION LOGIC
+    // We attempt to start the session if we have ANY data in the library.
+    // We do NOT wait for the full 30 words anymore.
+    
+    if (vocabLibrary.length > 0) {
       const reviewCandidates = vocabLibrary
         .filter(v => !v.isKnown)
         .sort((a, b) => (a.lastTestedAt || 0) - (b.lastTestedAt || 0));
       const unusedCandidates = vocabLibrary.filter(v => v.lastTestedAt === null);
 
+      // Take up to 3 review words
       const reviewWords = reviewCandidates.slice(0, 3);
-      const newWords = unusedCandidates.slice(0, 30 - reviewWords.length);
+      
+      // Calculate how many new words we can fit (target 30 total, but accept less)
+      const targetNewCount = 30 - reviewWords.length;
+      const newWords = unusedCandidates.slice(0, targetNewCount);
       
       const combined = [...reviewWords, ...newWords];
 
@@ -33,11 +41,17 @@ export const VocabPractice: React.FC<VocabPracticeProps> = ({ vocabLibrary, onUp
         setSessionWords(combined.sort(() => Math.random() - 0.5));
         setCurrentIndex(0);
         setIsLoading(false);
+      } else {
+        // Library exists but maybe all words are "known" and tested recently?
+        // In this rare case, we might need to reset or wait, but for now show loading
+        // as App.tsx should be triggering a refill if unused count is low.
+        setIsLoading(true); 
       }
     } else {
+        // True cold start: Library is completely empty array.
         setIsLoading(true);
     }
-  }, [isVocabReady, vocabLibrary]);
+  }, [vocabLibrary]); // Trigger whenever library updates (e.g., background fetch finishes)
 
   const endSession = (finalPracticedWords: Map<string, VocabLibraryItem>) => {
     if (finalPracticedWords.size > 0) {
@@ -70,10 +84,10 @@ export const VocabPractice: React.FC<VocabPracticeProps> = ({ vocabLibrary, onUp
   
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center">
+      <div className="flex flex-col items-center justify-center p-12 text-center h-[60vh]">
         <RefreshCw className="animate-spin mb-4 text-indigo-600 w-8 h-8" />
-        <p className="font-bold text-slate-600">AI is preparing your vocabulary session...</p>
-        <p className="text-sm text-slate-400">Fetching new words in the background.</p>
+        <p className="font-bold text-slate-600">Preparing vocabulary...</p>
+        <p className="text-sm text-slate-400 mt-2">First-time setup may take a moment.</p>
       </div>
     );
   }
