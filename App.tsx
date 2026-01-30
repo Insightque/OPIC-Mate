@@ -6,8 +6,8 @@ import { VocabPractice } from './components/VocabPractice';
 import { PatternPractice } from './components/PatternPractice';
 import { ScriptItem, ViewState, VocabItem, StructureItem } from './types';
 import { MessageSquare } from 'lucide-react';
-import { generateStructureList } from './services/geminiService';
 import { OPIC_VOCAB_DB } from './constants/vocabData';
+import { OPIC_PATTERN_DB } from './constants/patternData';
 
 export default function App() {
   const [view, setView] = useState<ViewState>(ViewState.DASHBOARD);
@@ -32,8 +32,6 @@ export default function App() {
       return saved ? JSON.parse(saved) : [];
     } catch { return []; }
   });
-
-  const [isRefillingPatterns, setIsRefillingPatterns] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('opic_scripts_v4', JSON.stringify(scripts));
@@ -63,29 +61,21 @@ export default function App() {
     }
   }, [vocabQueue.length]);
 
-  // Background Pattern Pre-fetching (Keep Gemini for patterns as they are structural logic)
+  // Local Pattern Refilling (Instant)
   useEffect(() => {
-    const refillPatterns = async () => {
-      if (isRefillingPatterns) return;
-      if (patterns.length < 5) {
-        setIsRefillingPatterns(true);
-        try {
-          const newItems = await generateStructureList();
-          const currentSet = new Set(patterns.map(p => p.english));
-          const uniqueNew = newItems.filter(p => !currentSet.has(p.english));
-          
-          if (uniqueNew.length > 0) {
-            setPatterns(prev => [...prev, ...uniqueNew]);
-          }
-        } catch (error) {
-          console.error("Failed to pre-fetch patterns:", error);
-        } finally {
-          setIsRefillingPatterns(false);
-        }
-      }
-    };
-    refillPatterns();
-  }, [patterns, isRefillingPatterns]);
+    if (patterns.length < 5) {
+      // Shuffle the DB and take a slice
+      const shuffled = [...OPIC_PATTERN_DB]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 15);
+      
+      setPatterns(prev => {
+        const currentSet = new Set(prev.map(p => p.english));
+        const uniqueNew = shuffled.filter(p => !currentSet.has(p.english));
+        return [...prev, ...uniqueNew];
+      });
+    }
+  }, [patterns.length]);
 
   const handleNextVocab = () => {
     setVocabQueue(prev => prev.slice(1));
