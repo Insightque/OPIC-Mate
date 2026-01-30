@@ -1,7 +1,9 @@
 export enum ViewState {
   DASHBOARD = 'DASHBOARD',
   CREATE = 'CREATE',
-  PRACTICE = 'PRACTICE'
+  PRACTICE = 'PRACTICE',
+  VOCAB = 'VOCAB',
+  PATTERNS = 'PATTERNS'
 }
 
 export interface ScriptItem {
@@ -9,7 +11,7 @@ export interface ScriptItem {
   question: string;
   koreanAnswer: string;
   englishScript: string;
-  logicFlow: string[]; // Added: Logic keywords for structural thinking
+  logicFlow: string[];
   createdAt: number;
   stats: {
     successCount: number;
@@ -22,6 +24,16 @@ export interface CommonPattern {
   pattern: string;
   explanation: string;
   example: string;
+}
+
+export interface VocabItem {
+  word: string;
+  meaning: string;
+}
+
+export interface StructureItem {
+  korean: string;
+  english: string;
 }
 
 export interface PracticeSessionResult {

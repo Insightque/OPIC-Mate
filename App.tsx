@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Dashboard } from './components/Dashboard';
 import { ScriptGenerator } from './components/ScriptGenerator';
 import { PracticeMode } from './components/PracticeMode';
+import { VocabPractice } from './components/VocabPractice';
+import { PatternPractice } from './components/PatternPractice';
 import { ScriptItem, ViewState } from './types';
 import { MessageSquare } from 'lucide-react';
 
@@ -10,7 +12,7 @@ export default function App() {
   const [scripts, setScripts] = useState<ScriptItem[]>([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('opic_scripts_v2');
+    const saved = localStorage.getItem('opic_scripts_v3');
     if (saved) {
       try {
         setScripts(JSON.parse(saved));
@@ -22,7 +24,7 @@ export default function App() {
 
   const saveScripts = (newScripts: ScriptItem[]) => {
     setScripts(newScripts);
-    localStorage.setItem('opic_scripts_v2', JSON.stringify(newScripts));
+    localStorage.setItem('opic_scripts_v3', JSON.stringify(newScripts));
   };
 
   const handleAddScript = (script: ScriptItem) => {
@@ -31,7 +33,7 @@ export default function App() {
   };
 
   const handleDeleteScript = (id: string) => {
-    if (confirm("Delete this script?")) {
+    if (confirm("Permanently remove this script from library?")) {
         saveScripts(scripts.filter(s => s.id !== id));
     }
   };
@@ -56,15 +58,20 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-12 font-['Inter']">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 text-indigo-600 cursor-pointer" onClick={() => setView(ViewState.DASHBOARD)}>
-            <MessageSquare className="w-6 h-6 fill-indigo-600" />
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                <MessageSquare className="w-5 h-5 text-white" />
+            </div>
             <h1 className="font-black text-xl tracking-tighter">OPIc <span className="text-slate-800">Mate</span></h1>
           </div>
           {view !== ViewState.DASHBOARD && (
-            <button onClick={() => setView(ViewState.DASHBOARD)} className="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors">
-                EXIT SESSION
+            <button 
+              onClick={() => setView(ViewState.DASHBOARD)} 
+              className="px-3 py-1 bg-slate-100 rounded-full text-[10px] font-black text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all uppercase tracking-widest"
+            >
+                Return Home
             </button>
           )}
         </div>
@@ -74,8 +81,7 @@ export default function App() {
         {view === ViewState.DASHBOARD && (
           <Dashboard 
             scripts={scripts} 
-            onStartCreate={() => setView(ViewState.CREATE)}
-            onStartPractice={() => setView(ViewState.PRACTICE)}
+            onNavigate={(v) => setView(v)}
             onDeleteScript={handleDeleteScript}
           />
         )}
@@ -93,6 +99,18 @@ export default function App() {
             scripts={scripts}
             onCompleteSession={handlePracticeComplete}
             onExit={() => setView(ViewState.DASHBOARD)}
+          />
+        )}
+
+        {view === ViewState.VOCAB && (
+          <VocabPractice 
+            onExit={() => setView(ViewState.DASHBOARD)} 
+          />
+        )}
+
+        {view === ViewState.PATTERNS && (
+          <PatternPractice 
+            onExit={() => setView(ViewState.DASHBOARD)} 
           />
         )}
       </main>

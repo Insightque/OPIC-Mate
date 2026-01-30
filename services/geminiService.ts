@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
-import { ScriptItem } from "../types";
+import { ScriptItem, VocabItem, StructureItem } from "../types";
 
 const getAiClient = () => {
   const apiKey = process.env.API_KEY;
@@ -13,10 +13,22 @@ export const generateOpicQuestion = async (): Promise<string> => {
   const ai = getAiClient();
   const model = "gemini-3-flash-preview";
   
+  const topics = [
+    "Hobbies (Music, Movies, Parks)",
+    "Daily Life (Home, Grocery, Routine)",
+    "Past Experiences (Memorable trip, Childhood)",
+    "Roleplay (Calling a travel agency, Booking a hotel)",
+    "Comparison (Past vs Present technology, Different types of houses)",
+    "Problems/Situations (Lost phone, Broken appliance)"
+  ];
+  const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+
   const prompt = `
-    Generate a common OPIc interview question.
-    Suitable for IH to AL level. Focus on work, hobbies, or past experiences.
-    Return ONLY the question in English.
+    Generate a highly realistic OPIc (Oral Proficiency Interview - computer) question.
+    Category: ${randomTopic}.
+    Level: IH to AL target.
+    Provide the question exactly as an interviewer would say it in English.
+    Return ONLY the question text.
   `;
 
   const response = await ai.models.generateContent({
@@ -24,24 +36,14 @@ export const generateOpicQuestion = async (): Promise<string> => {
     contents: prompt,
   });
 
-  return response.text?.trim() || "Tell me about your typical workday.";
+  return response.text?.trim() || "Tell me about the house you lived in as a child.";
 };
 
-export const generateKoreanSamples = async (question: string, masteredScripts: ScriptItem[]): Promise<{ samples: string[] }> => {
+export const generateVocabList = async (): Promise<VocabItem[]> => {
   const ai = getAiClient();
   const model = "gemini-3-flash-preview";
-
-  const masteredContext = masteredScripts.length > 0 
-    ? `The student is comfortable with these structures: ${masteredScripts.map(s => s.englishScript.slice(0, 50)).join(", ")}`
-    : "";
-
-  const prompt = `
-    Question: "${question}"
-    Provide 3 natural Korean sample answers. 
-    ${masteredContext}
-    Try to suggest content that could use similar sentence structures the student already knows.
-    Return JSON: { "samples": ["sample1", "sample2", "sample3"] }
-  `;
+  const prompt = `Generate a list of 10 high-frequency OPIc vocabulary items or idioms (e.g., "breathtaking", "get some fresh air", "hit the gym"). 
+  Return as JSON object with a "vocabs" array containing objects with "word" (English) and "meaning" (Korean).`;
 
   const response = await ai.models.generateContent({
     model,
@@ -51,28 +53,81 @@ export const generateKoreanSamples = async (question: string, masteredScripts: S
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          samples: { type: Type.ARRAY, items: { type: Type.STRING } }
+          vocabs: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                word: { type: Type.STRING },
+                meaning: { type: Type.STRING }
+              }
+            }
+          }
         }
       }
     }
   });
+  const data = JSON.parse(response.text || '{"vocabs":[]}');
+  return data.vocabs;
+};
 
+export const generateStructureList = async (): Promise<StructureItem[]> => {
+  const ai = getAiClient();
+  const model = "gemini-3-flash-preview";
+  const prompt = `Generate 10 OPIc sentence structures (patterns). Focus on verbs and complex sentence starters.
+  Format: { "structures": [ { "korean": "한글 패턴 (예: ~하는 것이 기억에 남아요)", "english": "English Structure (e.g., It remains memorable that I...)" } ] }`;
+
+  const response = await ai.models.generateContent({
+    model,
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          structures: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                korean: { type: Type.STRING },
+                english: { type: Type.STRING }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+  const data = JSON.parse(response.text || '{"structures":[]}');
+  return data.structures;
+};
+
+export const generateKoreanSamples = async (question: string, masteredScripts: ScriptItem[]): Promise<{ samples: string[] }> => {
+  const ai = getAiClient();
+  const model = "gemini-3-flash-preview";
+  const masteredContext = masteredScripts.length > 0 
+    ? `The student is comfortable with these structures: ${masteredScripts.map(s => s.englishScript.slice(0, 50)).join(", ")}`
+    : "";
+  const prompt = `Question: "${question}"\nProvide 3 natural Korean sample answers. ${masteredContext}\nReturn JSON: { "samples": ["sample1", "sample2", "sample3"] }`;
+  const response = await ai.models.generateContent({
+    model,
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: { samples: { type: Type.ARRAY, items: { type: Type.STRING } } }
+      }
+    }
+  });
   return JSON.parse(response.text || '{"samples": []}');
 };
 
-export const generateEnglishScripts = async (koreanText: string): Promise<{ 
-  scripts: { label: string, text: string, logicFlow: string[] }[] 
-}> => {
+export const generateEnglishScripts = async (koreanText: string): Promise<{ scripts: { label: string, text: string, logicFlow: string[] }[] }> => {
   const ai = getAiClient();
   const model = "gemini-3-flash-preview";
-
-  const prompt = `
-    Korean Answer: "${koreanText}"
-    Create 3 English versions (Simple, Natural, Detailed).
-    For each, also provide a "logicFlow": a list of 4-5 short English keywords representing the structural steps of the answer.
-    Return JSON structure.
-  `;
-
+  const prompt = `Korean Answer: "${koreanText}"\nCreate 3 English versions (Simple, Natural, Detailed) with logicFlow.\nReturn JSON structure.`;
   const schema: Schema = {
     type: Type.OBJECT,
     properties: {
@@ -90,34 +145,20 @@ export const generateEnglishScripts = async (koreanText: string): Promise<{
       }
     }
   };
-
   const response = await ai.models.generateContent({
     model,
     contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: schema
-    }
+    config: { responseMimeType: "application/json", responseSchema: schema }
   });
-
   return JSON.parse(response.text || '{"scripts": []}');
 };
 
 export const extractCommonPatterns = async (scripts: ScriptItem[]): Promise<{ patterns: { pattern: string, explanation: string, example: string }[] }> => {
   if (scripts.length === 0) return { patterns: [] };
-  
   const ai = getAiClient();
   const model = "gemini-3-flash-preview";
-
   const scriptsText = scripts.map(s => s.englishScript).join("\n---\n");
-  const prompt = `
-    Analyze these OPIc scripts and extract 3 recurring useful sentence patterns or idioms.
-    Scripts:
-    ${scriptsText}
-    
-    Return JSON: { "patterns": [ { "pattern": "...", "explanation": "...", "example": "..." } ] }
-  `;
-
+  const prompt = `Analyze these OPIc scripts and extract 3 recurring useful sentence patterns. Return JSON: { "patterns": [ { "pattern": "...", "explanation": "...", "example": "..." } ] }`;
   const response = await ai.models.generateContent({
     model,
     contents: prompt,
@@ -141,6 +182,5 @@ export const extractCommonPatterns = async (scripts: ScriptItem[]): Promise<{ pa
       }
     }
   });
-
   return JSON.parse(response.text || '{"patterns": []}');
 };
