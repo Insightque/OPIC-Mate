@@ -6,31 +6,26 @@ import { VocabPractice } from './components/VocabPractice';
 import { PatternPractice } from './components/PatternPractice';
 import { ScriptItem, ViewState, VocabLibraryItem } from './types';
 import { MessageSquare } from 'lucide-react';
+import { generateVocabList } from './services/geminiService';
 
 export default function App() {
   const [view, setView] = useState<ViewState>(ViewState.DASHBOARD);
   const [scripts, setScripts] = useState<ScriptItem[]>([]);
   const [vocabLibrary, setVocabLibrary] = useState<VocabLibraryItem[]>([]);
+  const [isRefillingVocab, setIsRefillingVocab] = useState(false);
 
   useEffect(() => {
-    // Load scripts
     const savedScripts = localStorage.getItem('opic_scripts_v4');
     if (savedScripts) {
       try {
         setScripts(JSON.parse(savedScripts));
-      } catch (e) {
-        console.error("Failed to parse scripts", e);
-      }
+      } catch (e) { console.error("Failed to parse scripts", e); }
     }
-
-    // Load vocab library
     const savedVocab = localStorage.getItem('opic_vocab_v4');
     if (savedVocab) {
       try {
         setVocabLibrary(JSON.parse(savedVocab));
-      } catch (e) {
-        console.error("Failed to parse vocab", e);
-      }
+      } catch (e) { console.error("Failed to parse vocab", e); }
     }
   }, []);
 
@@ -39,10 +34,50 @@ export default function App() {
     localStorage.setItem('opic_scripts_v4', JSON.stringify(newScripts));
   };
 
-  const saveVocab = (newVocab: VocabLibraryItem[]) => {
-    setVocabLibrary(newVocab);
-    localStorage.setItem('opic_vocab_v4', JSON.stringify(newVocab));
+  const handleUpdateVocab = (updatedItems: VocabLibraryItem[]) => {
+    setVocabLibrary(prevLibrary => {
+      const libraryMap = new Map(prevLibrary.map(item => [item.word, item]));
+      updatedItems.forEach(item => libraryMap.set(item.word, item));
+      const newLibrary = Array.from(libraryMap.values());
+      localStorage.setItem('opic_vocab_v4', JSON.stringify(newLibrary));
+      return newLibrary;
+    });
   };
+
+  // Background Vocabulary Pre-fetching
+  useEffect(() => {
+    const refillVocabLibrary = async () => {
+      if (isRefillingVocab) return;
+      const unusedCount = vocabLibrary.filter(v => v.lastTestedAt === null).length;
+      const REFILL_THRESHOLD = 27;
+
+      if (unusedCount < REFILL_THRESHOLD) {
+        setIsRefillingVocab(true);
+        console.log(`Unused vocab count (${unusedCount}) is below threshold. Pre-fetching...`);
+        try {
+          const newItems = await generateVocabList();
+          const libraryWords = new Set(vocabLibrary.map(v => v.word));
+          const uniqueNewItems = newItems.filter(item => !libraryWords.has(item.word));
+
+          if (uniqueNewItems.length > 0) {
+            const newLibraryItems: VocabLibraryItem[] = uniqueNewItems.map(item => ({
+              ...item, isKnown: false, failCount: 0, lastTestedAt: null,
+            }));
+            handleUpdateVocab(newLibraryItems);
+          }
+        } catch (error) {
+          console.error("Failed to pre-fetch vocabulary:", error);
+        } finally {
+          setIsRefillingVocab(false);
+        }
+      }
+    };
+
+    // Run check only after initial load from localStorage is likely complete
+    if (localStorage.getItem('opic_vocab_v4') !== null) {
+      refillVocabLibrary();
+    }
+  }, [vocabLibrary, isRefillingVocab]);
 
   const handleAddScript = (script: ScriptItem) => {
     saveScripts([...scripts, script]);
@@ -72,6 +107,8 @@ export default function App() {
     });
     saveScripts(updatedScripts);
   };
+
+  const isVocabReady = vocabLibrary.filter(v => v.lastTestedAt === null).length >= 27;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-12 font-['Inter']">
@@ -122,8 +159,9 @@ export default function App() {
         {view === ViewState.VOCAB && (
           <VocabPractice 
             vocabLibrary={vocabLibrary}
-            onUpdateLibrary={saveVocab}
+            onUpdateLibrary={handleUpdateVocab}
             onExit={() => setView(ViewState.DASHBOARD)} 
+            isVocabReady={isVocabReady}
           />
         )}
 

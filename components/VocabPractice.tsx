@@ -1,66 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { VocabLibraryItem, VocabItem } from '../types';
-import { generateVocabList } from '../services/geminiService';
+import { VocabLibraryItem } from '../types';
 import { Button } from './Button';
-import { ArrowLeft, CheckCircle2, XCircle, BrainCircuit, RefreshCw } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
 
 interface VocabPracticeProps {
   vocabLibrary: VocabLibraryItem[];
-  onUpdateLibrary: (library: VocabLibraryItem[]) => void;
+  onUpdateLibrary: (updatedItems: VocabLibraryItem[]) => void;
   onExit: () => void;
+  isVocabReady: boolean;
 }
 
-export const VocabPractice: React.FC<VocabPracticeProps> = ({ vocabLibrary, onUpdateLibrary, onExit }) => {
+export const VocabPractice: React.FC<VocabPracticeProps> = ({ vocabLibrary, onUpdateLibrary, onExit, isVocabReady }) => {
   const [sessionWords, setSessionWords] = useState<VocabLibraryItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [practicedInSession, setPracticedInSession] = useState<Map<string, VocabLibraryItem>>(new Map());
   const [showMeaning, setShowMeaning] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const createSession = async () => {
-    setLoading(true);
-    try {
+  useEffect(() => {
+    if (isVocabReady && vocabLibrary.length > 0) {
       const reviewCandidates = vocabLibrary
         .filter(v => !v.isKnown)
         .sort((a, b) => (a.lastTestedAt || 0) - (b.lastTestedAt || 0));
-      
+      const unusedCandidates = vocabLibrary.filter(v => v.lastTestedAt === null);
+
       const reviewWords = reviewCandidates.slice(0, 3);
+      const newWords = unusedCandidates.slice(0, 30 - reviewWords.length);
       
-      const numNewWords = 30 - reviewWords.length;
-      const newVocabItems = await generateVocabList();
-      
-      const newWords = newVocabItems
-        .filter(newItem => !vocabLibrary.some(existingItem => existingItem.word === newItem.word)) // Avoid duplicates
-        .slice(0, numNewWords)
-        .map(item => ({
-          ...item,
-          isKnown: false,
-          failCount: 0,
-          lastTestedAt: null,
-        }));
-
       const combined = [...reviewWords, ...newWords];
-      setSessionWords(combined.sort(() => Math.random() - 0.5));
-      setCurrentIndex(0);
-    } catch (e) {
-      console.error("Failed to create vocab session", e);
-      onExit();
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  useEffect(() => {
-    createSession();
-  }, []);
+      if (combined.length > 0) {
+        setSessionWords(combined.sort(() => Math.random() - 0.5));
+        setCurrentIndex(0);
+        setIsLoading(false);
+      }
+    } else {
+        setIsLoading(true);
+    }
+  }, [isVocabReady, vocabLibrary]);
 
   const endSession = (finalPracticedWords: Map<string, VocabLibraryItem>) => {
     if (finalPracticedWords.size > 0) {
-      const newLibraryMap = new Map(vocabLibrary.map(item => [item.word, item]));
-      finalPracticedWords.forEach((value, key) => {
-        newLibraryMap.set(key, value);
-      });
-      onUpdateLibrary(Array.from(newLibraryMap.values()));
+      onUpdateLibrary(Array.from(finalPracticedWords.values()));
     }
     onExit();
   };
@@ -76,7 +57,6 @@ export const VocabPractice: React.FC<VocabPracticeProps> = ({ vocabLibrary, onUp
       lastTestedAt: Date.now(),
     };
     
-    // FIX: Explicitly specify generic types for the Map constructor to resolve a TypeScript type inference issue.
     const newPracticedMap = new Map<string, VocabLibraryItem>(practicedInSession).set(currentWord.word, updatedWord);
     setPracticedInSession(newPracticedMap);
 
@@ -88,13 +68,15 @@ export const VocabPractice: React.FC<VocabPracticeProps> = ({ vocabLibrary, onUp
     }
   };
   
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center p-12 text-center">
-      <RefreshCw className="animate-spin mb-4 text-indigo-600 w-8 h-8" />
-      <p className="font-bold text-slate-600">AI is creating a personalized vocabulary session for you...</p>
-      <p className="text-sm text-slate-400">This includes new words and some for review.</p>
-    </div>
-  );
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center">
+        <RefreshCw className="animate-spin mb-4 text-indigo-600 w-8 h-8" />
+        <p className="font-bold text-slate-600">AI is preparing your vocabulary session...</p>
+        <p className="text-sm text-slate-400">Fetching new words in the background.</p>
+      </div>
+    );
+  }
 
   const currentWord = sessionWords[currentIndex];
   if (!currentWord) return null;
