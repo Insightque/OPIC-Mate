@@ -4,14 +4,14 @@ import { ScriptGenerator } from './components/ScriptGenerator';
 import { PracticeMode } from './components/PracticeMode';
 import { VocabPractice } from './components/VocabPractice';
 import { PatternPractice } from './components/PatternPractice';
-import { ScriptItem, ViewState, VocabLibraryItem, StructureItem } from './types';
+import { ScriptItem, ViewState, VocabItem, StructureItem } from './types';
 import { MessageSquare } from 'lucide-react';
-import { generateVocabList, generateStructureList } from './services/geminiService';
+import { generateStructureList } from './services/geminiService';
+import { OPIC_VOCAB_DB } from './constants/vocabData';
 
 export default function App() {
   const [view, setView] = useState<ViewState>(ViewState.DASHBOARD);
   
-  // State with lazy initialization to ensure consistency with localStorage
   const [scripts, setScripts] = useState<ScriptItem[]>(() => {
     try {
       const saved = localStorage.getItem('opic_scripts_v4');
@@ -19,9 +19,9 @@ export default function App() {
     } catch { return []; }
   });
 
-  const [vocabLibrary, setVocabLibrary] = useState<VocabLibraryItem[]>(() => {
+  const [vocabQueue, setVocabQueue] = useState<VocabItem[]>(() => {
     try {
-      const saved = localStorage.getItem('opic_vocab_v4');
+      const saved = localStorage.getItem('opic_vocab_queue_v4');
       return saved ? JSON.parse(saved) : [];
     } catch { return []; }
   });
@@ -33,70 +33,44 @@ export default function App() {
     } catch { return []; }
   });
 
-  const [isRefillingVocab, setIsRefillingVocab] = useState(false);
   const [isRefillingPatterns, setIsRefillingPatterns] = useState(false);
 
-  // Persistence Effects
   useEffect(() => {
     localStorage.setItem('opic_scripts_v4', JSON.stringify(scripts));
   }, [scripts]);
 
   useEffect(() => {
-    localStorage.setItem('opic_vocab_v4', JSON.stringify(vocabLibrary));
-  }, [vocabLibrary]);
+    localStorage.setItem('opic_vocab_queue_v4', JSON.stringify(vocabQueue));
+  }, [vocabQueue]);
 
   useEffect(() => {
     localStorage.setItem('opic_patterns_v4', JSON.stringify(patterns));
   }, [patterns]);
 
-
-  // Background Vocabulary Pre-fetching
+  // Local Vocabulary Refilling (Instant)
   useEffect(() => {
-    const refillVocabLibrary = async () => {
-      if (isRefillingVocab) return;
-      const unusedCount = vocabLibrary.filter(v => v.lastTestedAt === null).length;
-      // Keep trying to fill buffer to ~30, but don't block UI based on this
-      const REFILL_THRESHOLD = 27;
+    if (vocabQueue.length < 5) {
+      // Shuffle the DB and take a slice
+      const shuffled = [...OPIC_VOCAB_DB]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 30);
+      
+      setVocabQueue(prev => {
+        const currentWords = new Set(prev.map(v => v.word));
+        const uniqueNew = shuffled.filter(v => !currentWords.has(v.word));
+        return [...prev, ...uniqueNew];
+      });
+    }
+  }, [vocabQueue.length]);
 
-      if (unusedCount < REFILL_THRESHOLD) {
-        setIsRefillingVocab(true);
-        try {
-          const newItems = await generateVocabList();
-          const libraryWords = new Set(vocabLibrary.map(v => v.word));
-          const uniqueNewItems = newItems.filter(item => !libraryWords.has(item.word));
-
-          if (uniqueNewItems.length > 0) {
-            const newLibraryItems: VocabLibraryItem[] = uniqueNewItems.map(item => ({
-              ...item, isKnown: false, failCount: 0, lastTestedAt: null,
-            }));
-            // Update using functional state to avoid closure staleness
-            setVocabLibrary(prev => {
-                const libraryMap = new Map(prev.map(item => [item.word, item]));
-                newLibraryItems.forEach(item => libraryMap.set(item.word, item));
-                return Array.from(libraryMap.values());
-            });
-          }
-        } catch (error) {
-          console.error("Failed to pre-fetch vocabulary:", error);
-        } finally {
-          setIsRefillingVocab(false);
-        }
-      }
-    };
-    refillVocabLibrary();
-  }, [vocabLibrary, isRefillingVocab]);
-
-  // Background Pattern Pre-fetching
+  // Background Pattern Pre-fetching (Keep Gemini for patterns as they are structural logic)
   useEffect(() => {
     const refillPatterns = async () => {
       if (isRefillingPatterns) return;
-      // If we have fewer than 5 patterns, fetch more (queue system)
       if (patterns.length < 5) {
         setIsRefillingPatterns(true);
-        console.log(`Pattern queue low (${patterns.length}). Pre-fetching structures...`);
         try {
           const newItems = await generateStructureList();
-          // Avoid duplicates based on English sentence
           const currentSet = new Set(patterns.map(p => p.english));
           const uniqueNew = newItems.filter(p => !currentSet.has(p.english));
           
@@ -113,18 +87,11 @@ export default function App() {
     refillPatterns();
   }, [patterns, isRefillingPatterns]);
 
-
-  // Update Handlers
-  const handleUpdateVocab = (updatedItems: VocabLibraryItem[]) => {
-    setVocabLibrary(prevLibrary => {
-      const libraryMap = new Map(prevLibrary.map(item => [item.word, item]));
-      updatedItems.forEach(item => libraryMap.set(item.word, item));
-      return Array.from(libraryMap.values());
-    });
+  const handleNextVocab = () => {
+    setVocabQueue(prev => prev.slice(1));
   };
 
   const handleNextPattern = () => {
-    // Remove the first pattern from the queue
     setPatterns(prev => prev.slice(1));
   };
 
@@ -155,10 +122,6 @@ export default function App() {
         return script;
     }));
   };
-
-  // Critical Change: Considered ready if there is ANY data. 
-  // The threshold logic is now only used for background fetching, not for UI blocking.
-  const isVocabReady = vocabLibrary.length > 0;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-12 font-['Inter']">
@@ -208,10 +171,9 @@ export default function App() {
 
         {view === ViewState.VOCAB && (
           <VocabPractice 
-            vocabLibrary={vocabLibrary}
-            onUpdateLibrary={handleUpdateVocab}
+            vocabQueue={vocabQueue}
+            onNext={handleNextVocab}
             onExit={() => setView(ViewState.DASHBOARD)} 
-            isVocabReady={isVocabReady}
           />
         )}
 
