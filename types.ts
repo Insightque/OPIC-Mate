@@ -40,6 +40,7 @@ export interface VocabLibraryItem extends VocabItem {
 export interface StructureItem {
   korean: string;
   english: string;
+  samples: { korean: string, english: string }[];
 }
 
 export interface PracticeSessionResult {

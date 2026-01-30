@@ -45,37 +45,23 @@ export default function App() {
     localStorage.setItem('opic_patterns_v4', JSON.stringify(patterns));
   }, [patterns]);
 
-  // Local Vocabulary Refilling (Instant)
-  useEffect(() => {
-    if (vocabQueue.length < 5) {
-      // Shuffle the DB and take a slice
-      const shuffled = [...OPIC_VOCAB_DB]
+  const startVocabSession = () => {
+    // Fresh shuffle of 30 words every time this is clicked
+    const shuffled = [...OPIC_VOCAB_DB]
         .sort(() => Math.random() - 0.5)
         .slice(0, 30);
-      
-      setVocabQueue(prev => {
-        const currentWords = new Set(prev.map(v => v.word));
-        const uniqueNew = shuffled.filter(v => !currentWords.has(v.word));
-        return [...prev, ...uniqueNew];
-      });
-    }
-  }, [vocabQueue.length]);
+    setVocabQueue(shuffled);
+    setView(ViewState.VOCAB);
+  };
 
-  // Local Pattern Refilling (Instant)
-  useEffect(() => {
-    if (patterns.length < 5) {
-      // Shuffle the DB and take a slice
-      const shuffled = [...OPIC_PATTERN_DB]
+  const startPatternSession = () => {
+    // Fresh shuffle of 20 patterns every time this is clicked
+    const shuffled = [...OPIC_PATTERN_DB]
         .sort(() => Math.random() - 0.5)
-        .slice(0, 15);
-      
-      setPatterns(prev => {
-        const currentSet = new Set(prev.map(p => p.english));
-        const uniqueNew = shuffled.filter(p => !currentSet.has(p.english));
-        return [...prev, ...uniqueNew];
-      });
-    }
-  }, [patterns.length]);
+        .slice(0, 20);
+    setPatterns(shuffled);
+    setView(ViewState.PATTERNS);
+  };
 
   const handleNextVocab = () => {
     setVocabQueue(prev => prev.slice(1));
@@ -140,6 +126,8 @@ export default function App() {
             scripts={scripts} 
             onNavigate={(v) => setView(v)}
             onDeleteScript={handleDeleteScript}
+            onStartVocab={startVocabSession}
+            onStartPatterns={startPatternSession}
           />
         )}
 

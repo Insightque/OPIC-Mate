@@ -1,195 +1,197 @@
 import { StructureItem } from "../types";
 
 export const OPIC_PATTERN_DB: StructureItem[] = [
-  // ==========================================
-  // 1. Openers & Introductions (서론)
-  // ==========================================
-  { korean: "제가 ~에 대해 말씀드리고 싶은 것은...", english: "What I'd like to tell you about is..." },
-  { korean: "질문하신 ~에 관해서라면,", english: "When it comes to the question of..." },
-  { korean: "사실, 저는 ~에 대해 생각해 본 적이 별로 없지만,", english: "Actually, I haven't thought much about..., but" },
-  { korean: "~에는 여러 가지 종류가 있습니다.", english: "There are several types of..." },
-  { korean: "그것은 대답하기 꽤 어려운 질문이네요.", english: "That's a pretty tough question to answer." },
-  { korean: "가장 먼저 떠오르는 것은 ~입니다.", english: "The first thing that comes to mind is..." },
-  { korean: "확실히 말씀드리기는 어렵지만,", english: "It's hard to say for sure, but..." },
-  { korean: "솔직히 말씀드리면,", english: "To be honest with you," },
-  { korean: "제가 가장 좋아하는 ~은 단연코 ...입니다.", english: "My favorite ... is definitely..." },
-  { korean: "저는 ~의 열렬한 팬입니다.", english: "I am a huge fan of..." },
-  { korean: "저는 ~에 푹 빠져 있습니다.", english: "I am really into..." },
-  { korean: "~에 대해 말하자면 끝도 없을 거예요.", english: "I could go on and on about..." },
-  { korean: "이 주제에 대해서 할 말이 참 많습니다.", english: "I have so much to say about this topic." },
-  { korean: "그것은 제게 매우 흥미로운 질문이네요.", english: "That is a very interesting question to me." },
-  { korean: "어디서부터 시작해야 할까요?", english: "Where should I start?" },
-  { korean: "최근에, 저는 ~에 관심을 갖게 되었습니다.", english: "Recently, I've become interested in..." },
-  { korean: "제 생각에 ~은 중요한 이슈입니다.", english: "In my opinion, ... is a significant issue." },
-  { korean: "일반적으로 말해서,", english: "Generally speaking," },
-  { korean: "제 경험에 비추어 보면,", english: "Based on my experience," },
-  { korean: "~에 대한 이야기를 들려드릴게요.", english: "Let me tell you a story about..." },
+  // 1. Openers
+  { 
+    korean: "제가 ~에 대해 말씀드리고 싶은 것은...", 
+    english: "What I'd like to tell you about is...",
+    samples: [
+      { korean: "제가 말씀드리고 싶은 것은 제 가장 좋아하는 공원입니다.", english: "What I'd like to tell you about is my favorite park." },
+      { korean: "제가 말씀드리고 싶은 것은 저의 기억에 남는 여행입니다.", english: "What I'd like to tell you about is my memorable trip." },
+      { korean: "제가 말씀드리고 싶은 것은 제 어릴 적 집입니다.", english: "What I'd like to tell you about is my childhood home." }
+    ]
+  },
+  { 
+    korean: "~에 관해서라면,", 
+    english: "When it comes to...",
+    samples: [
+      { korean: "음악에 관해서라면, 저는 힙합을 선호합니다.", english: "When it comes to music, I prefer hip-hop." },
+      { korean: "재활용에 관해서라면, 한국은 매우 엄격합니다.", english: "When it comes to recycling, Korea is very strict." },
+      { korean: "집안일에 관해서라면, 저는 설거지 담당입니다.", english: "When it comes to housework, I am in charge of doing the dishes." }
+    ]
+  },
+  { 
+    korean: "사실, 저는 ~에 대해 생각해 본 적이 별로 없지만,", 
+    english: "Actually, I haven't thought much about..., but",
+    samples: [
+      { korean: "사실, 저는 그 문제에 대해 생각해 본 적이 별로 없지만...", english: "Actually, I haven't thought much about that issue, but..." },
+      { korean: "사실, 저는 가구에 대해 생각해 본 적이 별로 없지만...", english: "Actually, I haven't thought much about furniture, but..." },
+      { korean: "사실, 저는 이웃에 대해 생각해 본 적이 별로 없지만...", english: "Actually, I haven't thought much about my neighbors, but..." }
+    ]
+  },
+  { 
+    korean: "가장 먼저 떠오르는 것은 ~입니다.", 
+    english: "The first thing that comes to mind is...",
+    samples: [
+      { korean: "가장 먼저 떠오르는 것은 한강 공원입니다.", english: "The first thing that comes to mind is Han River Park." },
+      { korean: "당신이 그 질문을 했을 때 가장 먼저 떠오르는 것은 제 첫 직장입니다.", english: "When you ask that question, the first thing that comes to mind is my first job." },
+      { korean: "가장 먼저 떠오르는 것은 맛있는 길거리 음식입니다.", english: "The first thing that comes to mind is delicious street food." }
+    ]
+  },
+  { 
+    korean: "제가 가장 좋아하는 ~은 단연코 ...입니다.", 
+    english: "My favorite ... is definitely...",
+    samples: [
+      { korean: "제가 가장 좋아하는 가수는 단연코 아이유입니다.", english: "My favorite singer is definitely IU." },
+      { korean: "제가 가장 좋아하는 영화 장르는 단연코 액션입니다.", english: "My favorite movie genre is definitely action." },
+      { korean: "제가 가장 좋아하는 방은 단연코 제 침실입니다.", english: "My favorite room is definitely my bedroom." }
+    ]
+  },
 
-  // ==========================================
-  // 2. Habits & Routines (습관/경향 - 현재시제)
-  // ==========================================
-  { korean: "저는 보통 주말에 ~하러 갑니다.", english: "I usually go to ... on weekends." },
-  { korean: "저는 틈날 때마다 ~하려고 노력합니다.", english: "I try to ... whenever I have free time." },
-  { korean: "저는 ~하는 습관이 있습니다.", english: "I have a habit of -ing..." },
-  { korean: "제가 ~에 가면, 저는 항상...", english: "When I go to ..., I always..." },
-  { korean: "저는 ~하는 것을 규칙으로 삼고 있습니다.", english: "I make it a rule to..." },
-  { korean: "저는 일주일에 한 번 정도 ~을 합니다.", english: "I do ... about once a week." },
-  { korean: "제가 ~을 할 때 가장 먼저 하는 일은...", english: "The first thing I do when I ... is..." },
-  { korean: "저는 ~하는 경향이 있습니다.", english: "I tend to..." },
-  { korean: "가끔 기분 전환을 위해 ~을 합니다.", english: "Sometimes I ... for a change of pace." },
-  { korean: "저는 주로 친구들과 어울리는 것을 즐깁니다.", english: "I mostly enjoy hanging out with my friends." },
-  { korean: "~은 제 일상의 큰 부분을 차지합니다.", english: "... is a big part of my daily routine." },
-  { korean: "저는 아침형 인간이라서,", english: "Since I am a morning person," },
-  { korean: "저는 스트레스를 풀기 위해 ~을 합니다.", english: "I ... to relieve my stress." },
-  { korean: "저는 ~ 없이는 살 수 없습니다.", english: "I cannot live without..." },
-  { korean: "날씨가 좋으면, 저는 주로...", english: "If the weather is nice, I usually..." },
-  { korean: "제가 가장 자주 사용하는 앱은 ~입니다.", english: "The app I use most frequently is..." },
-  { korean: "저는 집에서 쉬는 것을 선호합니다.", english: "I prefer staying at home and relaxing." },
-  { korean: "저는 ~에 꽤 많은 시간을 보냅니다.", english: "I spend quite a lot of time -ing..." },
-  { korean: "그것은 제가 재충전하는 데 도움이 됩니다.", english: "It helps me recharge my batteries." },
-  { korean: "저는 ~에 대해 까다로운 편입니다.", english: "I am picky about..." },
+  // 2. Habits
+  { 
+    korean: "저는 보통 주말에 ~하러 갑니다.", 
+    english: "I usually go to ... on weekends.",
+    samples: [
+      { korean: "저는 보통 주말에 영화를 보러 영화관에 갑니다.", english: "I usually go to the movie theater on weekends." },
+      { korean: "저는 보통 주말에 커피를 마시러 카페에 갑니다.", english: "I usually go to a cafe to drink coffee on weekends." },
+      { korean: "저는 보통 주말에 부모님 댁에 갑니다.", english: "I usually go to my parents' house on weekends." }
+    ]
+  },
+  { 
+    korean: "저는 틈날 때마다 ~하려고 노력합니다.", 
+    english: "I try to ... whenever I have free time.",
+    samples: [
+      { korean: "저는 틈날 때마다 조깅을 하려고 노력합니다.", english: "I try to go jogging whenever I have free time." },
+      { korean: "저는 틈날 때마다 영어 공부를 하려고 노력합니다.", english: "I try to study English whenever I have free time." },
+      { korean: "저는 틈날 때마다 집을 청소하려고 노력합니다.", english: "I try to clean my house whenever I have free time." }
+    ]
+  },
+  { 
+    korean: "저는 ~하는 습관이 있습니다.", 
+    english: "I have a habit of -ing...",
+    samples: [
+      { korean: "저는 잠자리에 들기 전에 뉴스를 확인하는 습관이 있습니다.", english: "I have a habit of checking the news before going to bed." },
+      { korean: "저는 아침에 스트레칭을 하는 습관이 있습니다.", english: "I have a habit of stretching in the morning." },
+      { korean: "저는 식사 후에 물을 마시는 습관이 있습니다.", english: "I have a habit of drinking water after meals." }
+    ]
+  },
 
-  // ==========================================
-  // 3. Past Experiences & Memories (과거 경험)
-  // ==========================================
-  { korean: "몇 년 전에 ~에 갔던 기억이 납니다.", english: "I remember going to ... a few years ago." },
-  { korean: "가장 기억에 남는 것은...", english: "What I remember most is..." },
-  { korean: "~했을 때 깊은 인상을 받았습니다.", english: "I was deeply impressed when I..." },
-  { korean: "그 경험은 저에게 큰 영향을 미쳤습니다.", english: "The experience had a huge impact on me." },
-  { korean: "제가 어렸을 때,", english: "Back when I was a child," },
-  { korean: "처음에는 ~하는 것이 어려웠습니다.", english: "At first, it was hard to..." },
-  { korean: "그것은 제 인생 최고의 경험 중 하나였습니다.", english: "It was one of the best experiences of my life." },
-  { korean: "솔직히 말해서, 그것은 기대 이하였습니다.", english: "To be honest, it was worse than I expected." },
-  { korean: "저는 ~해서 깜짝 놀랐습니다.", english: "I was surprised that..." },
-  { korean: "그 일이 일어났을 때 저는 ~하고 있었습니다.", english: "I was -ing when it happened." },
-  { korean: "갑자기, ~가 발생했습니다.", english: "All of a sudden, ... occurred." },
-  { korean: "돌이켜 보면,", english: "Looking back," },
-  { korean: "그 이후로, 저는 ~하게 되었습니다.", english: "Since then, I have come to..." },
-  { korean: "그 여행의 하이라이트는 ~였습니다.", english: "The highlight of the trip was..." },
-  { korean: "저는 그 순간을 결코 잊지 못할 것입니다.", english: "I will never forget that moment." },
-  { korean: "다행히도, 우리는 ~할 수 있었습니다.", english: "Fortunately, we were able to..." },
-  { korean: "그것은 저에게 눈을 뜨게 해 준 경험이었습니다.", english: "It was an eye-opening experience for me." },
-  { korean: "저는 ~하며 즐거운 시간을 보냈습니다.", english: "I had a great time -ing..." },
-  { korean: "제가 마지막으로 ~한 것은 ... 전입니다.", english: "The last time I ... was ... ago." },
-  { korean: "그것은 정말 당황스러운 상황이었습니다.", english: "It was such an embarrassing situation." },
+  // 3. Past Experiences
+  { 
+    korean: "몇 년 전에 ~에 갔던 기억이 납니다.", 
+    english: "I remember going to ... a few years ago.",
+    samples: [
+      { korean: "몇 년 전에 제주도에 갔던 기억이 납니다.", english: "I remember going to Jeju Island a few years ago." },
+      { korean: "몇 년 전에 라이브 콘서트에 갔던 기억이 납니다.", english: "I remember going to a live concert a few years ago." },
+      { korean: "몇 년 전에 해변에 갔던 기억이 납니다.", english: "I remember going to the beach a few years ago." }
+    ]
+  },
+  { 
+    korean: "가장 기억에 남는 것은...", 
+    english: "What I remember most is...",
+    samples: [
+      { korean: "가장 기억에 남는 것은 아름다운 야경이었습니다.", english: "What I remember most is the beautiful night view." },
+      { korean: "가장 기억에 남는 것은 친절한 현지 사람들이었습니다.", english: "What I remember most is the friendly local people." },
+      { korean: "가장 기억에 남는 것은 끔찍한 날씨였습니다.", english: "What I remember most is the terrible weather." }
+    ]
+  },
+  { 
+    korean: "그 경험은 저에게 큰 영향을 미쳤습니다.", 
+    english: "The experience had a huge impact on me.",
+    samples: [
+      { korean: "해외에서 공부한 경험은 저에게 큰 영향을 미쳤습니다.", english: "Studying abroad had a huge impact on me." },
+      { korean: "그 자원봉사 경험은 저에게 큰 영향을 미쳤습니다.", english: "The volunteering experience had a huge impact on me." },
+      { korean: "그 사고는 저에게 큰 영향을 미쳤습니다.", english: "The accident had a huge impact on me." }
+    ]
+  },
 
-  // ==========================================
-  // 4. Feelings, Opinions & Reasons (감정/이유)
-  // ==========================================
-  { korean: "그 이유는 ~ 때문입니다.", english: "The reason is that..." },
-  { korean: "그것이 제가 ~을 좋아하는 주된 이유입니다.", english: "That is the main reason why I like..." },
-  { korean: "저는 ~가 매우 편리하다고 생각합니다.", english: "I find ... very convenient." },
-  { korean: "그것은 저를 편안하게 만듭니다.", english: "It makes me feel comfortable." },
-  { korean: "저는 ~한 분위기를 정말 좋아합니다.", english: "I really love the atmosphere of..." },
-  { korean: "그것은 가성비가 좋습니다.", english: "It is good value for money." },
-  { korean: "저는 그것이 시간 낭비라고 생각합니다.", english: "I think it is a waste of time." },
-  { korean: "가장 좋은 점은 ~입니다.", english: "The best thing about it is..." },
-  { korean: "~하는 것은 중요합니다.", english: "It is important to..." },
-  { korean: "저는 ~에 대해 엇갈린 감정을 가지고 있습니다.", english: "I have mixed feelings about..." },
-  { korean: "그것은 저에게 성취감을 줍니다.", english: "It gives me a sense of accomplishment." },
-  { korean: "저는 그들이 ~해야 한다고 믿습니다.", english: "I believe that they should..." },
-  { korean: "~라는 점이 마음에 듭니다.", english: "I like the fact that..." },
-  { korean: "그것은 말로 표현하기 어렵습니다.", english: "It is hard to describe in words." },
-  { korean: "그것은 정말 숨 막히게 아름다웠습니다.", english: "It was absolutely breathtaking." },
-  { korean: "저는 ~에 대해 실망했습니다.", english: "I was disappointed with..." },
-  { korean: "그것은 기대에 부응했습니다.", english: "It lived up to my expectations." },
-  { korean: "그것은 제 취향에 딱 맞습니다.", english: "It suits my taste perfectly." },
-  { korean: "저는 ~을 강력히 추천합니다.", english: "I highly recommend..." },
-  { korean: "~ 때문에 저는 기분이 우울했습니다.", english: "Because of ..., I felt blue." },
+  // 4. Feelings & Opinions
+  { 
+    korean: "그것이 제가 ~을 좋아하는 주된 이유입니다.", 
+    english: "That is the main reason why I like...",
+    samples: [
+      { korean: "그것이 제가 요리를 좋아하는 주된 이유입니다.", english: "That is the main reason why I like cooking." },
+      { korean: "그것이 제가 이 공원을 좋아하는 주된 이유입니다.", english: "That is the main reason why I like this park." },
+      { korean: "그것이 제가 대중교통을 좋아하는 주된 이유입니다.", english: "That is the main reason why I like public transportation." }
+    ]
+  },
+  { 
+    korean: "저는 ~가 매우 편리하다고 생각합니다.", 
+    english: "I find ... very convenient.",
+    samples: [
+      { korean: "저는 배달 앱이 매우 편리하다고 생각합니다.", english: "I find delivery apps very convenient." },
+      { korean: "저는 지하철 시스템이 매우 편리하다고 생각합니다.", english: "I find the subway system very convenient." },
+      { korean: "저는 온라인 쇼핑이 매우 편리하다고 생각합니다.", english: "I find online shopping very convenient." }
+    ]
+  },
+  { 
+    korean: "가성비가 좋습니다.", 
+    english: "It is good value for money.",
+    samples: [
+      { korean: "이 식당은 가성비가 좋습니다.", english: "This restaurant is good value for money." },
+      { korean: "그 호텔은 비싸지 않고 가성비가 좋았습니다.", english: "The hotel was not expensive and was good value for money." },
+      { korean: "새 노트북은 가성비가 정말 좋습니다.", english: "The new laptop is really good value for money." }
+    ]
+  },
 
-  // ==========================================
-  // 5. Comparisons & Changes (비교/변화)
-  // ==========================================
-  { korean: "과거에 비해, ~은 많이 변했습니다.", english: "Compared to the past, ... has changed a lot." },
-  { korean: "가장 큰 차이점은 ~입니다.", english: "The biggest difference is..." },
-  { korean: "예전에는 ~하곤 했지만, 지금은...", english: "I used to ..., but now I..." },
-  { korean: "~은 예전보다 훨씬 더 좋아졌습니다.", english: "... is much better than before." },
-  { korean: "A와 B의 주요 차이점은 ~입니다.", english: "The main difference between A and B is..." },
-  { korean: "반면에,", english: "On the other hand," },
-  { korean: "~은 점점 더 인기를 얻고 있습니다.", english: "... is becoming more and more popular." },
-  { korean: "기술의 발달 덕분에,", english: "Thanks to the development of technology," },
-  { korean: "~에는 장단점이 있습니다.", english: "There are pros and cons to..." },
-  { korean: "그것들은 여러 면에서 비슷합니다.", english: "They are similar in many ways." },
-  { korean: "~하는 대신에, 요즘 사람들은...", english: "Instead of -ing, people these days..." },
-  { korean: "~만큼 편리한 것은 없습니다.", english: "There is nothing as convenient as..." },
-  { korean: "그것은 예전과 완전히 다릅니다.", english: "It is totally different from how it used to be." },
-  { korean: "~의 가격이 급격히 올랐습니다.", english: "The price of ... has gone up dramatically." },
-  { korean: "사람들은 예전보다 건강에 더 신경을 씁니다.", english: "People care more about health than before." },
-  { korean: "전통적인 주택과 달리, 현대 아파트는...", english: "Unlike traditional houses, modern apartments are..." },
-  { korean: "그것은 ~보다 훨씬 더 효과적입니다.", english: "It is much more effective than..." },
-  { korean: "시간이 지날수록,", english: "As time goes by," },
-  { korean: "가장 눈에 띄는 변화는 ~입니다.", english: "The most noticeable change is..." },
-  { korean: "우리는 더 이상 ~할 필요가 없습니다.", english: "We no longer need to..." },
+  // 5. Comparisons
+  { 
+    korean: "과거에 비해, ~은 많이 변했습니다.", 
+    english: "Compared to the past, ... has changed a lot.",
+    samples: [
+      { korean: "과거에 비해, 우리 동네는 많이 변했습니다.", english: "Compared to the past, my neighborhood has changed a lot." },
+      { korean: "과거에 비해, 기술은 많이 변했습니다.", english: "Compared to the past, technology has changed a lot." },
+      { korean: "과거에 비해, 사람들의 생활 방식은 많이 변했습니다.", english: "Compared to the past, people's lifestyles have changed a lot." }
+    ]
+  },
+  { 
+    korean: "가장 큰 차이점은 ~입니다.", 
+    english: "The biggest difference is...",
+    samples: [
+      { korean: "가장 큰 차이점은 화면 크기입니다.", english: "The biggest difference is the screen size." },
+      { korean: "가장 큰 차이점은 편의성입니다.", english: "The biggest difference is convenience." },
+      { korean: "전통 시장과 대형 마트의 가장 큰 차이점은 가격입니다.", english: "The biggest difference between traditional markets and hypermarkets is the price." }
+    ]
+  },
+  
+  // 6. Hypotheticals
+  { 
+    korean: "만약 제가 ~라면, 저는 ...할 것입니다.", 
+    english: "If I were ..., I would...",
+    samples: [
+      { korean: "만약 제가 당신이라면, 저는 사과할 것입니다.", english: "If I were you, I would apologize." },
+      { korean: "만약 제가 휴가를 간다면, 저는 해변으로 갈 것입니다.", english: "If I were on vacation, I would go to the beach." },
+      { korean: "만약 제가 부자라면, 저는 세계 여행을 할 것입니다.", english: "If I were rich, I would travel the world." }
+    ]
+  },
+  { 
+    korean: "제가 ~해도 괜찮을까요?", 
+    english: "Would it be okay if I...?",
+    samples: [
+      { korean: "제가 다른 테이블로 옮겨도 괜찮을까요?", english: "Would it be okay if I moved to another table?" },
+      { korean: "제가 환불을 받아도 괜찮을까요?", english: "Would it be okay if I got a refund?" },
+      { korean: "제가 친구를 데려와도 괜찮을까요?", english: "Would it be okay if I brought a friend?" }
+    ]
+  },
 
-  // ==========================================
-  // 6. Hypotheticals & Suggestions (가정/제안)
-  // ==========================================
-  { korean: "만약 제가 ~라면, 저는 ...할 것입니다.", english: "If I were ..., I would..." },
-  { korean: "제가 ~해도 괜찮을까요?", english: "Would it be okay if I...?" },
-  { korean: "제가 ~할 수 있는지 궁금합니다.", english: "I was wondering if I could..." },
-  { korean: "~하는 게 어때요?", english: "Why don't we...?" },
-  { korean: "당신의 조언을 좀 구하고 싶습니다.", english: "I'd like to ask for your advice on..." },
-  { korean: "~을 제안하고 싶습니다.", english: "I would like to suggest..." },
-  { korean: "만약 기회가 된다면,", english: "If I have a chance," },
-  { korean: "시간이 되실 때 알려주세요.", english: "Let me know when you are free." },
-  { korean: "추가 요금을 내야 하나요?", english: "Do I have to pay an extra charge?" },
-  { korean: "가능한 한 빨리 이 문제를 해결해 주세요.", english: "Please fix this problem as soon as possible." },
-  { korean: "제가 다시 전화 드려도 될까요?", english: "Can I call you back?" },
-  { korean: "예약하고 싶은데요.", english: "I would like to make a reservation." },
-  { korean: "제가 티켓을 살 수 있는 방법이 있을까요?", english: "Is there any way I can buy a ticket?" },
-  { korean: "가장 좋은 방법은 ~하는 것입니다.", english: "The best way is to..." },
-  { korean: "확인해 주시겠어요?", english: "Could you please check...?" },
-  { korean: "당신이 제 입장이라면 어떻게 하시겠어요?", english: "What would you do if you were in my shoes?" },
-  { korean: "제가 가장 가고 싶은 나라는 ~입니다.", english: "The country I want to visit the most is..." },
-  { korean: "꿈의 집을 지을 수 있다면,", english: "If I could build my dream house," },
-  { korean: "그것은 ~에 달려 있습니다.", english: "It depends on..." },
-  { korean: "반드시 ~를 챙기세요.", english: "Make sure to bring..." },
-
-  // ==========================================
-  // 7. Problem Solving (문제 해결)
-  // ==========================================
-  { korean: "문제가 생겼습니다.", english: "There is a problem with..." },
-  { korean: "제 전화기가 제대로 작동하지 않습니다.", english: "My phone is not working properly." },
-  { korean: "어떻게 해야 할지 모르겠습니다.", english: "I don't know what to do." },
-  { korean: "갑자기 화면이 까맣게 변했습니다.", english: "Suddenly, the screen went black." },
-  { korean: "배터리가 나갔습니다.", english: "The battery died." },
-  { korean: "지갑을 잃어버렸습니다.", english: "I lost my wallet." },
-  { korean: "타이어가 펑크 났습니다.", english: "I got a flat tire." },
-  { korean: "그것은 완전히 부서졌습니다.", english: "It was completely broken." },
-  { korean: "서비스 센터에 연락해야 했습니다.", english: "I had to contact the service center." },
-  { korean: "결국 새 것을 사야 했습니다.", english: "I ended up buying a new one." },
-  { korean: "정말 실망스러웠습니다.", english: "It was really frustrating." },
-  { korean: "집에 두고 온 것이 생각났습니다.", english: "I realized I left it at home." },
-  { korean: "길을 잃었습니다.", english: "I got lost." },
-  { korean: "약속을 취소해야 했습니다.", english: "I had to cancel the appointment." },
-  { korean: "환불 받을 수 있나요?", english: "Can I get a refund?" },
-  { korean: "담당자와 통화하고 싶습니다.", english: "I would like to speak to the manager." },
-  { korean: "이런 일이 발생해서 죄송합니다.", english: "I am sorry that this happened." },
-  { korean: "제가 할 수 있는 것은 아무것도 없었습니다.", english: "There was nothing I could do." },
-  { korean: "그것은 악몽과도 같았습니다.", english: "It was like a nightmare." },
-  { korean: "다시는 이런 일이 없도록 하겠습니다.", english: "I will make sure this doesn't happen again." },
-
-  // ==========================================
-  // 8. Closing & Conclusion (결론)
-  // ==========================================
-  { korean: "이것이 제가 ~에 대해 말씀드릴 수 있는 전부입니다.", english: "That's all I can tell you about..." },
-  { korean: "들어주셔서 감사합니다.", english: "Thank you for listening." },
-  { korean: "요약하자면,", english: "To sum up," },
-  { korean: "전반적으로,", english: "Overall," },
-  { korean: "그래서 저는 ~을 좋아합니다.", english: "That's why I like..." },
-  { korean: "이것들이 제가 ~을 즐기는 이유입니다.", english: "These are the reasons why I enjoy..." },
-  { korean: "지금까지 제 집에 대한 소개였습니다.", english: "So far, this was the introduction to my house." },
-  { korean: "궁금한 점이 있으면 언제든지 물어보세요.", english: "Feel free to ask if you have any questions." },
-  { korean: "결론적으로,", english: "In conclusion," },
-  { korean: "이것이 제 기억에 남는 경험이었습니다.", english: "This was my memorable experience." },
-  { korean: "이것이 제가 주로 주말을 보내는 방식입니다.", english: "This is how I usually spend my weekends." },
-  { korean: "도움이 되었으면 좋겠네요.", english: "I hope this answers your question." },
-  { korean: "더 이상 생각이 나지 않네요.", english: "I can't think of anything else." },
-  { korean: "이 정도면 충분한 답변이 되었나요?", english: "Is this answer sufficient?" },
-  { korean: "다음 주제로 넘어가겠습니다.", english: "I will move on to the next topic." },
-  { korean: "제 답변을 마무리하겠습니다.", english: "I will wrap up my answer." },
-  { korean: "그것은 잊을 수 없는 경험이었습니다.", english: "It was an unforgettable experience." },
-  { korean: "저는 그 시간을 정말 소중하게 생각합니다.", english: "I really cherish that time." },
-  { korean: "저는 다시 그곳에 가고 싶습니다.", english: "I am dying to go there again." },
-  { korean: "그것은 정말 그럴 만한 가치가 있었습니다.", english: "It was totally worth it." }
+  // 7. Problem Solving
+  { 
+    korean: "문제가 생겼습니다.", 
+    english: "There is a problem with...",
+    samples: [
+      { korean: "제가 산 티켓에 문제가 생겼습니다.", english: "There is a problem with the ticket I bought." },
+      { korean: "제 예약에 문제가 생겼습니다.", english: "There is a problem with my reservation." },
+      { korean: "에어컨에 문제가 생겼습니다.", english: "There is a problem with the air conditioner." }
+    ]
+  },
+  { 
+    korean: "어떻게 해야 할지 모르겠습니다.", 
+    english: "I don't know what to do.",
+    samples: [
+      { korean: "지갑을 잃어버려서 어떻게 해야 할지 모르겠습니다.", english: "I lost my wallet, so I don't know what to do." },
+      { korean: "너무 당황해서 어떻게 해야 할지 모르겠습니다.", english: "I am so panic, I don't know what to do." },
+      { korean: "그것이 작동하지 않아서 어떻게 해야 할지 모르겠습니다.", english: "It's not working, so I don't know what to do." }
+    ]
+  }
 ];

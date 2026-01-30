@@ -8,9 +8,11 @@ interface DashboardProps {
   scripts: ScriptItem[];
   onNavigate: (view: ViewState) => void;
   onDeleteScript: (id: string) => void;
+  onStartVocab: () => void;
+  onStartPatterns: () => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ scripts, onNavigate, onDeleteScript }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ scripts, onNavigate, onDeleteScript, onStartVocab, onStartPatterns }) => {
   const [patterns, setPatterns] = useState<CommonPattern[]>([]);
   const [loadingPatterns, setLoadingPatterns] = useState(false);
 
@@ -75,7 +77,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ scripts, onNavigate, onDel
       {/* Mini Practice Modules */}
       <div className="grid grid-cols-2 gap-4">
           <button 
-            onClick={() => onNavigate(ViewState.VOCAB)}
+            onClick={onStartVocab}
             className="flex flex-col items-center justify-center p-6 bg-white border border-slate-200 rounded-3xl hover:border-indigo-400 hover:shadow-lg transition-all group"
           >
               <div className="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
@@ -86,7 +88,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ scripts, onNavigate, onDel
           </button>
           
           <button 
-            onClick={() => onNavigate(ViewState.PATTERNS)}
+            onClick={onStartPatterns}
             className="flex flex-col items-center justify-center p-6 bg-white border border-slate-200 rounded-3xl hover:border-indigo-400 hover:shadow-lg transition-all group"
           >
               <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
