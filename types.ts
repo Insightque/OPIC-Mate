@@ -31,6 +31,12 @@ export interface VocabItem {
   meaning: string;
 }
 
+export interface VocabLibraryItem extends VocabItem {
+  isKnown: boolean;
+  failCount: number;
+  lastTestedAt: number | null;
+}
+
 export interface StructureItem {
   korean: string;
   english: string;

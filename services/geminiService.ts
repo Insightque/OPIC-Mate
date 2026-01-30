@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type, Schema } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { ScriptItem, VocabItem, StructureItem } from "../types";
 
 const getAiClient = () => {
@@ -42,8 +42,10 @@ export const generateOpicQuestion = async (): Promise<string> => {
 export const generateVocabList = async (): Promise<VocabItem[]> => {
   const ai = getAiClient();
   const model = "gemini-3-flash-preview";
-  const prompt = `Generate a list of 10 high-frequency OPIc vocabulary items or idioms (e.g., "breathtaking", "get some fresh air", "hit the gym"). 
-  Return as JSON object with a "vocabs" array containing objects with "word" (English) and "meaning" (Korean).`;
+  // Requesting exactly 30 items as requested by user
+  const prompt = `Generate a list of 30 high-frequency OPIc vocabulary items, idioms, or colloquial expressions (e.g., "breathtaking", "get some fresh air", "hit the gym", "a stone's throw away"). 
+  Return as JSON object with a "vocabs" array containing objects with "word" (English) and "meaning" (Korean).
+  Make sure they are diverse and suitable for an IH/AL target level.`;
 
   const response = await ai.models.generateContent({
     model,
@@ -128,7 +130,8 @@ export const generateEnglishScripts = async (koreanText: string): Promise<{ scri
   const ai = getAiClient();
   const model = "gemini-3-flash-preview";
   const prompt = `Korean Answer: "${koreanText}"\nCreate 3 English versions (Simple, Natural, Detailed) with logicFlow.\nReturn JSON structure.`;
-  const schema: Schema = {
+  // FIX: Per @google/genai guidelines, responseSchema should be an object literal. The `Schema` type is not part of the public API.
+  const schema = {
     type: Type.OBJECT,
     properties: {
       scripts: {

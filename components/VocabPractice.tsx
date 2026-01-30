@@ -1,75 +1,174 @@
 import React, { useState, useEffect } from 'react';
-import { VocabItem } from '../types';
+import { VocabLibraryItem, VocabItem } from '../types';
 import { generateVocabList } from '../services/geminiService';
 import { Button } from './Button';
-import { ArrowRight, RefreshCw, Volume2, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, BrainCircuit, RefreshCw } from 'lucide-react';
 
-export const VocabPractice: React.FC<{ onExit: () => void }> = ({ onExit }) => {
-  const [list, setList] = useState<VocabItem[]>([]);
-  const [index, setIndex] = useState(0);
+interface VocabPracticeProps {
+  vocabLibrary: VocabLibraryItem[];
+  onUpdateLibrary: (library: VocabLibraryItem[]) => void;
+  onExit: () => void;
+}
+
+export const VocabPractice: React.FC<VocabPracticeProps> = ({ vocabLibrary, onUpdateLibrary, onExit }) => {
+  const [sessionWords, setSessionWords] = useState<VocabLibraryItem[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [practicedInSession, setPracticedInSession] = useState<Map<string, VocabLibraryItem>>(new Map());
   const [showMeaning, setShowMeaning] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const fetchList = async () => {
+  const createSession = async () => {
     setLoading(true);
     try {
-      const newList = await generateVocabList();
-      setList(prev => [...prev, ...newList]);
+      const reviewCandidates = vocabLibrary
+        .filter(v => !v.isKnown)
+        .sort((a, b) => (a.lastTestedAt || 0) - (b.lastTestedAt || 0));
+      
+      const reviewWords = reviewCandidates.slice(0, 3);
+      
+      const numNewWords = 30 - reviewWords.length;
+      const newVocabItems = await generateVocabList();
+      
+      const newWords = newVocabItems
+        .filter(newItem => !vocabLibrary.some(existingItem => existingItem.word === newItem.word)) // Avoid duplicates
+        .slice(0, numNewWords)
+        .map(item => ({
+          ...item,
+          isKnown: false,
+          failCount: 0,
+          lastTestedAt: null,
+        }));
+
+      const combined = [...reviewWords, ...newWords];
+      setSessionWords(combined.sort(() => Math.random() - 0.5));
+      setCurrentIndex(0);
     } catch (e) {
-      console.error(e);
+      console.error("Failed to create vocab session", e);
+      onExit();
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchList();
+    createSession();
   }, []);
 
-  const handleNext = () => {
-    if (index === list.length - 2 && !loading) {
-      fetchList();
+  const endSession = (finalPracticedWords: Map<string, VocabLibraryItem>) => {
+    if (finalPracticedWords.size > 0) {
+      const newLibraryMap = new Map(vocabLibrary.map(item => [item.word, item]));
+      finalPracticedWords.forEach((value, key) => {
+        newLibraryMap.set(key, value);
+      });
+      onUpdateLibrary(Array.from(newLibraryMap.values()));
     }
-    setIndex(prev => prev + 1);
-    setShowMeaning(false);
+    onExit();
   };
 
-  if (list.length === 0) return (
-    <div className="flex flex-col items-center justify-center p-12">
-      <RefreshCw className="animate-spin mb-4 text-indigo-600" />
-      <p>Preparing high-frequency OPIc vocabulary...</p>
+  const handleResponse = (isKnown: boolean) => {
+    const currentWord = sessionWords[currentIndex];
+    if (!currentWord) return;
+
+    const updatedWord = {
+      ...currentWord,
+      isKnown,
+      failCount: isKnown ? currentWord.failCount : currentWord.failCount + 1,
+      lastTestedAt: Date.now(),
+    };
+    
+    // FIX: Explicitly specify generic types for the Map constructor to resolve a TypeScript type inference issue.
+    const newPracticedMap = new Map<string, VocabLibraryItem>(practicedInSession).set(currentWord.word, updatedWord);
+    setPracticedInSession(newPracticedMap);
+
+    if (currentIndex < sessionWords.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+      setShowMeaning(false);
+    } else {
+      endSession(newPracticedMap);
+    }
+  };
+  
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center p-12 text-center">
+      <RefreshCw className="animate-spin mb-4 text-indigo-600 w-8 h-8" />
+      <p className="font-bold text-slate-600">AI is creating a personalized vocabulary session for you...</p>
+      <p className="text-sm text-slate-400">This includes new words and some for review.</p>
     </div>
   );
 
-  const current = list[index];
+  const currentWord = sessionWords[currentIndex];
+  if (!currentWord) return null;
+
+  const progress = ((currentIndex + 1) / sessionWords.length) * 100;
 
   return (
     <div className="max-w-xl mx-auto animate-in slide-in-from-bottom-4">
-      <Button onClick={onExit} variant="ghost" className="mb-6"><ArrowLeft className="w-4 h-4 mr-2" /> Finish Practice</Button>
+      <div className="mb-6 space-y-3">
+        <div className="flex justify-between items-center">
+            <button onClick={() => endSession(practicedInSession)} className="flex items-center gap-2 text-xs text-slate-400 font-bold hover:text-indigo-500">
+                <ArrowLeft className="w-4 h-4" /> End Session & Save
+            </button>
+            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                {currentIndex + 1} / {sessionWords.length}
+            </div>
+        </div>
+        <div className="w-full bg-slate-200 rounded-full h-2">
+            <div className="bg-indigo-500 h-2 rounded-full transition-all duration-300" style={{ width: `${progress}%` }}></div>
+        </div>
+      </div>
       
-      <div className="bg-white rounded-3xl shadow-xl border p-12 text-center min-h-[350px] flex flex-col justify-center items-center">
-        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 block">Target Vocab</label>
+      <div className="bg-white rounded-[2.5rem] shadow-2xl border-4 border-slate-50 p-12 text-center min-h-[400px] flex flex-col justify-center items-center relative overflow-hidden">
+        {currentWord.lastTestedAt !== null && !currentWord.isKnown && (
+            <div className="absolute top-4 right-4 bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter animate-bounce">
+                Review Word
+            </div>
+        )}
+
+        <label className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-8 block">Vocabulary Target</label>
         
-        <h2 className="text-4xl font-black text-indigo-600 mb-2">{current.word}</h2>
+        <h2 className="text-5xl font-black text-slate-900 mb-4 tracking-tighter leading-none">{currentWord.word}</h2>
         
-        <div className="h-20 flex items-center justify-center w-full mt-4">
+        <div className="h-24 flex items-center justify-center w-full mt-4">
           {showMeaning ? (
-            <p className="text-2xl font-bold text-slate-700 animate-in fade-in zoom-in duration-300">{current.meaning}</p>
+            <div className="animate-in fade-in zoom-in duration-300 text-center">
+                <p className="text-3xl font-black text-indigo-600 mb-1">{currentWord.meaning}</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase">Meaning in Korean</p>
+            </div>
           ) : (
             <button 
               onClick={() => setShowMeaning(true)} 
-              className="px-6 py-2 bg-slate-100 text-slate-400 rounded-full text-xs font-bold hover:bg-indigo-50 hover:text-indigo-400 transition-all"
+              className="px-8 py-3 bg-slate-100 text-slate-400 rounded-2xl text-[10px] font-black hover:bg-indigo-50 hover:text-indigo-400 transition-all border border-slate-200 uppercase tracking-widest"
             >
-              TAP TO REVEAL MEANING
+              TAP TO REVEAL
             </button>
           )}
         </div>
       </div>
 
-      <div className="mt-8">
-        <Button onClick={handleNext} className="w-full py-4 text-lg font-bold">
-          Next Word <ArrowRight className="w-5 h-5 ml-2" />
-        </Button>
+      <div className="mt-8 grid grid-cols-2 gap-4">
+        <button 
+            onClick={() => handleResponse(false)}
+            className="flex flex-col items-center justify-center p-6 bg-white rounded-3xl border-2 border-slate-200 hover:border-rose-400 hover:bg-rose-50 transition-all group shadow-sm"
+        >
+            <XCircle className="w-8 h-8 text-rose-400 mb-2 group-hover:scale-110 transition-transform" />
+            <span className="font-black text-slate-800 text-sm">NOT SURE</span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase">Keep Practicing</span>
+        </button>
+
+        <button 
+            onClick={() => handleResponse(true)}
+            className="flex flex-col items-center justify-center p-6 bg-white rounded-3xl border-2 border-slate-200 hover:border-emerald-400 hover:bg-emerald-50 transition-all group shadow-sm"
+        >
+            <CheckCircle2 className="w-8 h-8 text-emerald-400 mb-2 group-hover:scale-110 transition-transform" />
+            <span className="font-black text-slate-800 text-sm">I KNOW THIS</span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase">Mastered</span>
+        </button>
+      </div>
+
+      <div className="mt-6 text-center">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            Total {vocabLibrary.length} words in your personal database
+          </p>
       </div>
     </div>
   );

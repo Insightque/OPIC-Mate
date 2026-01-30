@@ -4,27 +4,44 @@ import { ScriptGenerator } from './components/ScriptGenerator';
 import { PracticeMode } from './components/PracticeMode';
 import { VocabPractice } from './components/VocabPractice';
 import { PatternPractice } from './components/PatternPractice';
-import { ScriptItem, ViewState } from './types';
+import { ScriptItem, ViewState, VocabLibraryItem } from './types';
 import { MessageSquare } from 'lucide-react';
 
 export default function App() {
   const [view, setView] = useState<ViewState>(ViewState.DASHBOARD);
   const [scripts, setScripts] = useState<ScriptItem[]>([]);
+  const [vocabLibrary, setVocabLibrary] = useState<VocabLibraryItem[]>([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('opic_scripts_v3');
-    if (saved) {
+    // Load scripts
+    const savedScripts = localStorage.getItem('opic_scripts_v4');
+    if (savedScripts) {
       try {
-        setScripts(JSON.parse(saved));
+        setScripts(JSON.parse(savedScripts));
       } catch (e) {
         console.error("Failed to parse scripts", e);
+      }
+    }
+
+    // Load vocab library
+    const savedVocab = localStorage.getItem('opic_vocab_v4');
+    if (savedVocab) {
+      try {
+        setVocabLibrary(JSON.parse(savedVocab));
+      } catch (e) {
+        console.error("Failed to parse vocab", e);
       }
     }
   }, []);
 
   const saveScripts = (newScripts: ScriptItem[]) => {
     setScripts(newScripts);
-    localStorage.setItem('opic_scripts_v3', JSON.stringify(newScripts));
+    localStorage.setItem('opic_scripts_v4', JSON.stringify(newScripts));
+  };
+
+  const saveVocab = (newVocab: VocabLibraryItem[]) => {
+    setVocabLibrary(newVocab);
+    localStorage.setItem('opic_vocab_v4', JSON.stringify(newVocab));
   };
 
   const handleAddScript = (script: ScriptItem) => {
@@ -69,9 +86,9 @@ export default function App() {
           {view !== ViewState.DASHBOARD && (
             <button 
               onClick={() => setView(ViewState.DASHBOARD)} 
-              className="px-3 py-1 bg-slate-100 rounded-full text-[10px] font-black text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all uppercase tracking-widest"
+              className="px-4 py-1.5 bg-slate-900 rounded-xl text-[10px] font-black text-white hover:bg-indigo-600 transition-all uppercase tracking-widest shadow-lg shadow-indigo-100"
             >
-                Return Home
+                EXIT
             </button>
           )}
         </div>
@@ -104,6 +121,8 @@ export default function App() {
 
         {view === ViewState.VOCAB && (
           <VocabPractice 
+            vocabLibrary={vocabLibrary}
+            onUpdateLibrary={saveVocab}
             onExit={() => setView(ViewState.DASHBOARD)} 
           />
         )}
